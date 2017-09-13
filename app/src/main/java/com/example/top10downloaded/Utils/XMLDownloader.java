@@ -1,4 +1,4 @@
-package com.example.top10downloaded;
+package com.example.top10downloaded.Utils;
 
 import android.os.AsyncTask;
 import android.util.Log;
