@@ -3,7 +3,7 @@ package com.example.top10downloaded.Utils;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.top10downloaded.MainActivity;
+import com.example.top10downloaded.Interfaces.AsyncTaskCallback;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -92,9 +92,7 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
     }
 
 
-    public String getXmlResult() {
-        return xmlResult;
-    }
+
 
 
 

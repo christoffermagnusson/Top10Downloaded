@@ -1,4 +1,4 @@
-package com.example.top10downloaded.Utils;
+package com.example.top10downloaded.Interfaces;
 
 /**
  * Interface to be used by an Activity that wants to receive

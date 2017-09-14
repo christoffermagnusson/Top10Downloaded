@@ -25,12 +25,13 @@ public class XMLParser {
     public ArrayList<FeedEntry> getParsedEntries() {
         return parsedEntries;
     }
+    private boolean status = true;
+    private FeedEntry currentRecord = null;
+    private boolean inEntry = false;
+    private String textValue = "";
 
     public boolean parse(String xmlData){
-        boolean status = true;
-        FeedEntry currentRecord = null;
-        boolean inEntry = false;
-        String textValue = "";
+
 
         try{
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -57,42 +58,7 @@ public class XMLParser {
                     case XmlPullParser.END_TAG: // checking for closing tags i.e </name>
                         Log.d(TAG, "parse: Ending tag for "+tagName);
                         if(inEntry){
-                            switch(tagName){
-                                case "entry":
-                                    parsedEntries.add(currentRecord);
-                                    inEntry=false;
-                                    break;
-                                case "name":
-                                    currentRecord.setName(textValue);
-                                    break;
-                                case "artist":
-                                    currentRecord.setArtist(textValue);
-                                    break;
-                                case "releasedate":
-                                    currentRecord.setReleaseDate(textValue);
-                                    break;
-                                case "summary":
-                                    currentRecord.setSummary(textValue);
-                                    break;
-                                case "image":
-                                    currentRecord.setImageUrl(textValue);
-                                    break;
-                            }
-
-                            /*if(tagName.equals("entry")){
-                                parsedEntries.add(currentRecord);
-                                inEntry=false;
-                            } else if(tagName.equals("name")){
-                                currentRecord.setName(textValue);
-                            } else if(tagName.equals("artist")){
-                                currentRecord.setArtist(textValue);
-                            } else if(tagName.equals("releasedate")){
-                                currentRecord.setReleaseDate(textValue);
-                            } else if(tagName.equals("summary")){
-                                currentRecord.setSummary(textValue);
-                            } else if (tagName.equals("image")){
-                                currentRecord.setImageUrl(textValue);
-                            }*/
+                            SetupFeedEntry(tagName);
                         }
                         break;
                     default:
@@ -108,5 +74,31 @@ public class XMLParser {
         }
 
         return status;
+    }
+
+    private void SetupFeedEntry(String tagName) {
+        Log.d(TAG, "SetupFeedEntry: Setting up FeedEntry");
+        switch(tagName){
+            case "entry":
+                parsedEntries.add(currentRecord);
+                inEntry=false;
+                break;
+            case "name":
+                currentRecord.setName(textValue);
+                break;
+            case "artist":
+                currentRecord.setArtist(textValue);
+                break;
+            case "releaseDate":
+                currentRecord.setReleaseDate(textValue);
+                break;
+            case "summary":
+                currentRecord.setSummary(textValue);
+                break;
+            case "image":
+                currentRecord.setImageUrl(textValue);
+                break;
+        }
+
     }
 }
