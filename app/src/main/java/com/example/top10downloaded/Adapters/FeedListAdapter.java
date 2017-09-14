@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.example.top10downloaded.Models.FeedEntry;
 import com.example.top10downloaded.R;
 
-import org.w3c.dom.Text;
+
 
 import java.util.List;
 
@@ -35,17 +35,37 @@ public class FeedListAdapter extends ArrayAdapter{
     @NonNull
     @Override // Gets called whenever Listview is initialized or scrolled out of view for new items...
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View view = inflater.inflate(layoutResource,parent,false);
-        TextView tvName = (TextView) view.findViewById(R.id.tvName);
-        TextView tvArtist = (TextView) view.findViewById(R.id.tvArtist);
-        TextView tvSummary = (TextView) view.findViewById(R.id.tvSummary);
-
+        ViewHolder holder;
+        if(convertView==null) { // minimize amount of views by only creating when needed
+            convertView = inflater.inflate(layoutResource, parent, false);
+            holder = new ViewHolder(convertView); // holderObj for instantiating TextView exactly once
+            convertView.setTag(holder);
+        }else{
+            holder = (ViewHolder) convertView.getTag();
+        }
         FeedEntry currentEntry = feedEntryList.get(position);
 
-        tvName.setText(currentEntry.getName());
-        tvArtist.setText(currentEntry.getArtist());
-        tvSummary.setText(currentEntry.getSummary());
-        return view;
+        holder.tvName.setText(currentEntry.getName());
+        holder.tvArtist.setText(currentEntry.getArtist());
+        holder.tvSummary.setText(currentEntry.getSummary());
+        return convertView;
+    }
+
+    /**
+     * Holding variables of UI elements in order
+     * to not instantiate multiple times, thus
+     * saving processing power
+     */
+    private class ViewHolder{
+        final TextView tvName;
+        final TextView tvArtist;
+        final TextView tvSummary;
+
+        ViewHolder(View view){
+            this.tvName = view.findViewById(R.id.tvName);
+            this.tvArtist = view.findViewById(R.id.tvArtist);
+            this.tvSummary = view.findViewById(R.id.tvSummary);
+        }
     }
 
     @Override
