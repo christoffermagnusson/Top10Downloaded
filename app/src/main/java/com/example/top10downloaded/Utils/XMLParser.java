@@ -57,7 +57,29 @@ public class XMLParser {
                     case XmlPullParser.END_TAG: // checking for closing tags i.e </name>
                         Log.d(TAG, "parse: Ending tag for "+tagName);
                         if(inEntry){
-                            if(tagName.equals("entry")){
+                            switch(tagName){
+                                case "entry":
+                                    parsedEntries.add(currentRecord);
+                                    inEntry=false;
+                                    break;
+                                case "name":
+                                    currentRecord.setName(textValue);
+                                    break;
+                                case "artist":
+                                    currentRecord.setArtist(textValue);
+                                    break;
+                                case "releasedate":
+                                    currentRecord.setReleaseDate(textValue);
+                                    break;
+                                case "summary":
+                                    currentRecord.setSummary(textValue);
+                                    break;
+                                case "image":
+                                    currentRecord.setImageUrl(textValue);
+                                    break;
+                            }
+
+                            /*if(tagName.equals("entry")){
                                 parsedEntries.add(currentRecord);
                                 inEntry=false;
                             } else if(tagName.equals("name")){
@@ -70,7 +92,7 @@ public class XMLParser {
                                 currentRecord.setSummary(textValue);
                             } else if (tagName.equals("image")){
                                 currentRecord.setImageUrl(textValue);
-                            }
+                            }*/
                         }
                         break;
                     default:
