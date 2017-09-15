@@ -14,14 +14,17 @@ import java.net.URL;
 
 
 /**
- * First param : URL
+ * First param  : URL
  * Second param : progressbar (if needed)
- * Third param : type of result
+ * Third param  : type of result
  *
- * Constructor: Add AsyncTaskCallback Interface
- *              used by an Activity in order
- *              to get updates when thread
- *              has executed.
+ * Constructor  : Add AsyncTaskCallback Interface
+ *                used by an Activity in order
+ *                to get updates when thread
+ *                has executed.
+ *
+ * Note to self : AsyncTask can only be used once, use new instance
+ *                for further use
  */
 
 public class XMLDownloader extends AsyncTask<String,Void,String> {
@@ -29,6 +32,7 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
     private AsyncTaskCallback callback;
 
     public XMLDownloader(AsyncTaskCallback callback){
+
         this.callback = callback;
     }
 
@@ -46,7 +50,7 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
-        Log.d(TAG, "onPostExecute: parameter : "+s);
+
         callback.onAsyncTaskComplete(s);
 
     }
@@ -63,7 +67,7 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(http.getInputStream()));
             int charsRead;
-            char[] inputBuffer = new char[500];
+            char[] inputBuffer = new char[500]; // Buffer which the reader puts its buffer into
 
             while(true){
                 charsRead = reader.read(inputBuffer);

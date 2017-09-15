@@ -44,7 +44,7 @@ public class XMLParser {
                 String tagName = parser.getName(); // current tag
                 switch(eventType){
                     case XmlPullParser.START_TAG: // checking for starting tag i.e <name>
-                        Log.d(TAG, "parse: Starting tag for "+tagName);
+                        //Log.d(TAG, "parse: Starting tag for "+tagName);
                         if(tagName.equals("entry")){
                             inEntry = true;
                             currentRecord = new FeedEntry();
@@ -56,7 +56,7 @@ public class XMLParser {
                         break;
 
                     case XmlPullParser.END_TAG: // checking for closing tags i.e </name>
-                        Log.d(TAG, "parse: Ending tag for "+tagName);
+                        //Log.d(TAG, "parse: Ending tag for "+tagName);
                         if(inEntry){
                             SetupFeedEntry(tagName);
                         }
@@ -77,7 +77,7 @@ public class XMLParser {
     }
 
     private void SetupFeedEntry(String tagName) {
-        Log.d(TAG, "SetupFeedEntry: Setting up FeedEntry");
+
         switch(tagName){
             case "entry":
                 parsedEntries.add(currentRecord);

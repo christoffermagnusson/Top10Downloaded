@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Top 10 Downloaded</string>
+    <string name="baseUrl">http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/</string>
+    <string name="top10_free">topfreeapplications/limit=10/xml</string>
+    <string name="top10_paid">toppaidapplications/limit=10/xml</string>
+    <string name="top10_songs">topsongs/limit=10/xml</string>
+    <string name="top25_free">topfreeapplications/limit=25/xml</string>
+    <string name="top25_paid">toppaidapplications/limit=25/xml</string>
+    <string name="top25_songs">topsongs/limit=25/xml</string>
+
 </resources>
