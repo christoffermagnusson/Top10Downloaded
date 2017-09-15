@@ -40,7 +40,12 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
     @Override
     protected String doInBackground(String... strings) {
         Log.d(TAG, "doInBackground: Downloading from "+strings[0]);
-        xmlResult = downloadXML(strings[0]);
+        try {
+            xmlResult = downloadXML(strings[0]);
+        }catch(RepeatedURLException rue){
+            Log.d(TAG, "doInBackground: "+rue.getMessage());
+            return xmlResult;
+        }
         if(xmlResult == null){
             Log.e(TAG, "doInBackground: Error while downloading from "+strings[0]);
         }
@@ -55,7 +60,7 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
 
     }
 
-    private String downloadXML(String path) {
+    private String downloadXML(String path) throws RepeatedURLException {
         StringBuilder xmlResultStr = new StringBuilder();
         int response = 0;
         try {
@@ -82,7 +87,13 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
             reader.close();
 
         }catch(MalformedURLException mue){
-            Log.e(TAG, "downloadXML: Error with the URL formatting");
+            
+            if(mue.getCause() instanceof  NullPointerException){
+                Log.d(TAG, "downloadXML: Repeated download");
+                throw new RepeatedURLException("URL has previously been fetched, no need for fetching again at this time");
+            }else {
+                Log.e(TAG, "downloadXML: Error with the URL formatting ");
+            }
             return null;
         }catch(IOException ioe){
             Log.e(TAG, "downloadXML: Error when opening the connection: responseCode= "+response+" + stacktrace = "+ ioe.getMessage());
@@ -91,6 +102,7 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
             Log.e(TAG, "downloadXML: Error regarding permissions (INTERNET) "+se.getMessage());
             return null;
         }
+
 
         return xmlResultStr.toString();
     }

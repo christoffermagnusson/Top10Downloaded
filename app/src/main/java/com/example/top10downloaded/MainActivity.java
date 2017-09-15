@@ -11,6 +11,7 @@ import android.widget.ListView;
 import com.example.top10downloaded.Adapters.FeedListAdapter;
 import com.example.top10downloaded.Models.FeedEntry;
 import com.example.top10downloaded.Interfaces.AsyncTaskCallback;
+import com.example.top10downloaded.Utils.RepeatedURLException;
 import com.example.top10downloaded.Utils.XMLDownloader;
 import com.example.top10downloaded.Utils.XMLParser;
 
@@ -30,6 +31,9 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
     // Variable used to keep track of lastdownloaded
     // between filtering top10 and top25
     private String lastDownloaded = "";
+    private final String LAST_DOWNLOAD = "Last downloaded item";
+    private int lastMenuItemClicked = 0;
+    private final String LAST_ITEM = "Last item to clicked";
 
     /**
      * Filtering states of the app
@@ -40,16 +44,49 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
     }
 
     private State currentState = State.TOP10;
+    private final String CURRENT_STATE = "Current state";
+    private boolean isStarted = false;
+    private final String IS_STARTED = "the app is initiated";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         feedEntryListView = (ListView) findViewById(R.id.feedEntryList);
+        if(!isStarted){
+            String initialDownload = getString(R.string.baseUrl)+getString(R.string.top10_free);
+            downloadRSS(initialDownload);
+            lastDownloaded = initialDownload;
+            isStarted=true;
+        }
+        super.onCreate(savedInstanceState);
 
-        String initialDownload = getString(R.string.baseUrl)+getString(R.string.top10_free);
-        downloadRSS(initialDownload);
-        lastDownloaded = initialDownload;
+
+
+
+        
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(CURRENT_STATE, currentState.toString());
+        outState.putString(LAST_DOWNLOAD, lastDownloaded);
+        outState.putBoolean(IS_STARTED,isStarted);
+        outState.putInt(LAST_ITEM,lastMenuItemClicked);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        downloadRSS(savedInstanceState.getString(LAST_DOWNLOAD));
+        if(savedInstanceState.getString(CURRENT_STATE)=="TOP10"){
+            setState(State.TOP10);
+        }else if(savedInstanceState.getString(CURRENT_STATE)=="TOP25"){
+            setState(State.TOP25);
+        }
+        isStarted = savedInstanceState.getBoolean(IS_STARTED);
+        lastMenuItemClicked = savedInstanceState.getInt(LAST_ITEM);
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
@@ -57,13 +94,20 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
         getMenuInflater().inflate(R.menu.feeds_menu, menu);
         top10Item = menu.findItem(R.id.menuTop10);
         top25Item = menu.findItem(R.id.menuTop25);
-
+        switch(currentState){
+            case TOP10:
+                top10Item.setChecked(true);
+                break;
+            case TOP25:
+                top25Item.setChecked(true);
+                break;
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        String rssFeed = getString(R.string.baseUrl);
+        String baseUrl = getString(R.string.baseUrl);
 
         if(item.getItemId()==R.id.menuTop10){
             top10Item.setChecked(true);
@@ -73,7 +117,12 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
             setState(State.TOP25);
         }
 
-        downloadRSS(decideOnDownload(item.getItemId(), rssFeed,currentState));
+            // Check if you can cache the gathered data if user tries to fetch more than once on same URL
+            downloadRSS(decideOnDownload(item.getItemId(), baseUrl, currentState));
+
+
+        Log.d(TAG, "onOptionsItemSelected: "+decideOnDownload(item.getItemId(), baseUrl, currentState));
+        lastMenuItemClicked = item.getItemId();
 
 
         return true;
@@ -90,8 +139,8 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
      * @return String of rss to download
      */
     private String decideOnDownload(int id, String rssFeed,State state) {
-
-        if (state == State.TOP10) {
+        Log.d(TAG, "decideOnDownload: id="+id+", lastItem="+lastMenuItemClicked);
+        if (state == State.TOP10 && id != lastMenuItemClicked) {
             switch (id) {
                 case R.id.menuFree:
                     rssFeed += getString(R.string.top10_free);
@@ -105,11 +154,12 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
                 default:
                     lastDownloaded = lastDownloaded.replace("25","10"); // switch the limit of items in the url
                     rssFeed = lastDownloaded;
-                    Log.d(TAG, "decideOnDownload: Result "+rssFeed);
+                    Log.d(TAG, "decideOnDownload: Switched filtering from 25 to 10");
             }
             lastDownloaded = rssFeed;
             Log.d(TAG, "decideOnDownload: Last download="+lastDownloaded);
-        } else if (state == State.TOP25) {
+            return rssFeed;
+        } else if (state == State.TOP25 && id != lastMenuItemClicked) {
             switch (id) {
                 case R.id.menuFree:
                     rssFeed += getString(R.string.top25_free);
@@ -123,21 +173,24 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
                 default:
                     lastDownloaded = lastDownloaded.replace("10","25");
                     rssFeed=lastDownloaded;
-                    Log.d(TAG, "decideOnDownload: Result "+rssFeed);
+                    Log.d(TAG, "decideOnDownload: Switched filtering from 10 to 25");
 
 
             }
             lastDownloaded = rssFeed;
             Log.d(TAG, "decideOnDownload: Last download="+lastDownloaded);
+            return rssFeed;
         }
-        return rssFeed;
+
+        return null;
     }
 
     private void setState(State state){
+
         this.currentState=state;
     }
 
-    private void downloadRSS(String rssFeed){
+    private void downloadRSS(String rssFeed) {
         Log.d(TAG, "downloadRSS: Starting new AsyncTask");
         new XMLDownloader(this).execute(rssFeed);
     }
