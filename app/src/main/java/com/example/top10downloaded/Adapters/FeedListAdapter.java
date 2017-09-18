@@ -18,14 +18,14 @@ import com.example.top10downloaded.R;
 
 import java.util.List;
 
-public class FeedListAdapter extends ArrayAdapter{
+public class FeedListAdapter<T extends FeedEntry> extends ArrayAdapter{
 
     private static final String TAG = "FeedListAdapter";
     private final int layoutResource;
     private final LayoutInflater inflater;
-    private List<FeedEntry> feedEntryList;
+    private List<T> feedEntryList;
 
-    public FeedListAdapter(@NonNull Context context, @LayoutRes int resource, List<FeedEntry> feedEntryList) {
+    public FeedListAdapter(@NonNull Context context, @LayoutRes int resource, List<T> feedEntryList) {
         super(context, resource);
         this.layoutResource = resource;
         this.feedEntryList = feedEntryList;

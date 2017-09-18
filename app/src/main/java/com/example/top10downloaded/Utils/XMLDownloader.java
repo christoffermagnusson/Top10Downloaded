@@ -43,6 +43,7 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
         try {
             xmlResult = downloadXML(strings[0]);
         }catch(RepeatedURLException rue){
+
             Log.d(TAG, "doInBackground: "+rue.getMessage());
             return xmlResult;
         }
@@ -51,6 +52,8 @@ public class XMLDownloader extends AsyncTask<String,Void,String> {
         }
         return xmlResult;
     }
+
+
 
     @Override
     protected void onPostExecute(String s) {

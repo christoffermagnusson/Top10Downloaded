@@ -47,17 +47,22 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
     private final String CURRENT_STATE = "Current state";
     private boolean isStarted = false;
     private final String IS_STARTED = "the app is initiated";
+    private String cachedUrl = "INVALIDATED";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_main);
         feedEntryListView = (ListView) findViewById(R.id.feedEntryList);
-        if(!isStarted){
+        if(savedInstanceState==null){
             String initialDownload = getString(R.string.baseUrl)+getString(R.string.top10_free);
             downloadRSS(initialDownload);
             lastDownloaded = initialDownload;
-            isStarted=true;
+            Log.d(TAG, "onCreate: Bundle was NULL, starting app first time!");
+        }else{
+            downloadRSS(savedInstanceState.getString(LAST_DOWNLOAD));
+            setState(savedInstanceState.getString(CURRENT_STATE));
+            Log.d(TAG, "onCreate: Fetching last downloaded URL");
         }
         super.onCreate(savedInstanceState);
 
@@ -79,11 +84,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         downloadRSS(savedInstanceState.getString(LAST_DOWNLOAD));
-        if(savedInstanceState.getString(CURRENT_STATE)=="TOP10"){
-            setState(State.TOP10);
-        }else if(savedInstanceState.getString(CURRENT_STATE)=="TOP25"){
-            setState(State.TOP25);
-        }
+        setState(savedInstanceState.getString(CURRENT_STATE));
         isStarted = savedInstanceState.getBoolean(IS_STARTED);
         lastMenuItemClicked = savedInstanceState.getInt(LAST_ITEM);
         super.onRestoreInstanceState(savedInstanceState);
@@ -111,14 +112,20 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
 
         if(item.getItemId()==R.id.menuTop10){
             top10Item.setChecked(true);
-            setState(State.TOP10);
+            setState("TOP10");
         }else if(item.getItemId()==R.id.menuTop25){
             top25Item.setChecked(true);
-            setState(State.TOP25);
+            setState("TOP25");
         }
 
-            // Check if you can cache the gathered data if user tries to fetch more than once on same URL
-            downloadRSS(decideOnDownload(item.getItemId(), baseUrl, currentState));
+        String rssToDownload = decideOnDownload(item.getItemId(), baseUrl, currentState);
+        if(rssToDownload!=null) {
+            downloadRSS(rssToDownload);
+        }else{
+            Log.d(TAG, "onOptionsItemSelected: URL already fetched");
+            // dont download
+        }
+
 
 
         Log.d(TAG, "onOptionsItemSelected: "+decideOnDownload(item.getItemId(), baseUrl, currentState));
@@ -185,9 +192,13 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
         return null;
     }
 
-    private void setState(State state){
+    private void setState(String state){
+        if(state=="TOP10"){
+            this.currentState=State.TOP10;
+        }else if(state=="TOP25"){
+            this.currentState=State.TOP25;
+        }
 
-        this.currentState=state;
     }
 
     private void downloadRSS(String rssFeed) {
@@ -214,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskCallback
     }
 
     private void setupFeedEntryListView(ArrayList<FeedEntry> parsedEntries) {
-        FeedListAdapter adapter = new FeedListAdapter(MainActivity.this, R.layout.feedentry_listitem, parsedEntries);
+        FeedListAdapter<FeedEntry> adapter = new FeedListAdapter<>(MainActivity.this, R.layout.feedentry_listitem, parsedEntries);
         feedEntryListView.setAdapter(adapter);
 
     }
